@@ -17,84 +17,108 @@ defmodule PlugCors do
   end
 
   defp get_origin(conn) do
-    origin = get_req_header(conn, "origin")
+    origin = get_req_header(conn, "Origin")
     {conn, origin}
   end
 
   defp check_origin({conn, []}, _config) do
     conn
+    |> resp(200, "")
+    |> halt  
   end
 
   defp check_origin({conn, origin}, config) do
     origin = hd(origin)
 
     cond do
-      origin == "*" or is_origin_allowed?(origin, config) ->
+      is_origin_allowed?(origin, config) ->
         conn 
-        |> put_resp_header("Access-Control-Allow-Origin", origin) 
+        |> put_resp_header("Access-Control-Allow-Origin", origin)
+        |> get_request_method
         |> check_request_method(config)
       true ->
         conn
-        |> put_status(403)
-        |> send_resp
+        |> resp(403, "")
         |> halt        
     end
   end
 
   defp is_origin_allowed?(origin, config) do
-    Enum.find(config[:allowed_origins], fn(x) -> x == origin end) != nil 
+    origin = String.replace(origin, "http://", "") |> String.replace("https://", "")
+    cond do
+      hd(config[:allowed_origins]) == "*" ->
+        true
+      true ->
+        Enum.find(config[:allowed_origins], fn(x) -> x == origin end) != nil 
+    end
   end
 
-  defp check_request_method(conn, config) do
-    request_method = get_req_header(conn, "Access-Control-Request-Method") |> hd
-    case is_method_allowed?(request_method, config) do
-      nil -> 
+  defp get_request_method(conn) do
+    method = get_req_header(conn, "Access-Control-Request-Method")
+    {conn, method}
+  end
+
+  defp check_request_method({conn, []}, _config) do
+    conn
+    |> resp(200, "")
+    |> halt   
+  end
+
+  defp check_request_method({ conn, request_method }, config) do
+    case is_method_allowed?(hd(request_method), config) do
+      false -> 
         conn
-        |> put_status(403)
-        |> send_resp
+        |> resp(403, "")
         |> halt  
       _ ->
-        conn 
-        |> put_resp_header("Access-Control-Allow-Methods", Enum.join(config[:allowed_methods], ","))       
+        conn
+        |> put_resp_header("Access-Control-Allow-Methods", Enum.join(config[:allowed_methods], ",")) 
+        |> get_request_headers      
         |> check_access_control_headers(config)
     end 
   end
 
   defp is_method_allowed?(request_method, config) do
-    Enum.find(config[:allowed_methods], fn(x) -> x == request_method end) != nil 
+    response = Enum.find(config[:allowed_methods], fn(x) -> x == request_method end)
+    response != nil
   end
 
-  defp check_access_control_headers(conn, config) do
+  defp get_request_headers(conn) do
     headers = get_req_header(conn, "Access-Control-Request-Headers")
-    case Enum.empty? do
-      true ->
+    {conn, headers}
+  end
+
+  defp check_access_control_headers({conn, []}, _config) do
+    conn
+    |> resp(200, "")
+    |> halt   
+  end
+
+  defp check_access_control_headers({ conn, headers }, config) do
+    headers = hd(headers) |> String.split(",")
+    responses = Enum.map(headers, fn(x) ->
+      Enum.find(config[:allowed_headers], fn(y) -> String.downcase(y) == String.downcase(x) end)
+    end)
+
+    responses = Enum.map(responses, fn(x) ->
+      if is_nil(x) do
+        "nil"
+      else
+        x
+      end
+    end)
+
+    case Enum.find(responses, fn(x) -> x == "nil" end) do
+      nil -> 
         conn 
         |> put_resp_header("Access-Control-Allow-Headers", Enum.join(config[:allowed_headers], ","))       
-        |> put_status(200)
-        |> send_resp
+        |> resp(200, "")
         |> halt
-      false ->
-
-        headers = hd(headers) |> Split.split(",")
-        responses = Enum.each(headers, fn(x) ->
-          Enum.find(config[:allowed_headers], fn(y) -> String.downcase(y) == String.downcase(x) end)
-        end)
-
-        case Enum.find(responses, fn(x) -> x == nil end) do
-          nil -> 
-            conn 
-            |> put_resp_header("Access-Control-Allow-Headers", Enum.join(config[:allowed_headers], ","))       
-            |> put_status(200)
-            |> send_resp
-            |> halt
-          _ ->
-            conn 
-            |> put_resp_header("Access-Control-Allow-Headers", Enum.join(config[:allowed_headers], ","))       
-            |> put_status(403)
-            |> send_resp
-            |> halt
-        end
-
+      _ ->
+        conn 
+        |> put_resp_header("Access-Control-Allow-Headers", Enum.join(config[:allowed_headers], ","))       
+        |> resp(403, "")
+        |> halt
     end
   end
 
