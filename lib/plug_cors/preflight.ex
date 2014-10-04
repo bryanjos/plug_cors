@@ -9,11 +9,11 @@ defmodule PlugCors.Preflight do
 
   defp get_request_method(conn) do
     method = get_req_header(conn, "Access-Control-Request-Method") |> hd
-    {conn, String.split(method, ",")}
+    {conn, method }
   end
 
-  defp check_request_method({ conn, methods }, config) do
-    case are_all_allowed?(methods, config[:methods]) do
+  defp check_request_method({ conn, method }, config) do
+    case are_all_allowed?(method, config[:methods]) do
       false -> 
         send_unauthorized(conn) 
       _ ->
