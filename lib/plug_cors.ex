@@ -10,7 +10,7 @@ defmodule PlugCors do
 
     Parameters:
 
-    * origins: A list of allowed origins or "*" for all origins. Default: "*"
+    * origins: A list of allowed origins or "\*" for all origins. Default: "\*"
 
     * methods: A list of allowed HTTP methods. Default: ["GET", "HEAD", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"]
 
