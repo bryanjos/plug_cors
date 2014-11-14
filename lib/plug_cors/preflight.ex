@@ -8,7 +8,7 @@ defmodule PlugCors.Preflight do
   end
 
   defp get_request_method(conn) do
-    method = get_req_header(conn, "Access-Control-Request-Method") |> hd
+    method = get_req_header(conn, "access-control-request-method") |> hd
     {conn, method }
   end
 
@@ -24,7 +24,7 @@ defmodule PlugCors.Preflight do
   end
 
   defp get_request_headers(conn) do
-    headers = get_req_header(conn, "Access-Control-Request-Headers")
+    headers = get_req_header(conn, "access-control-request-headers")
     {conn, headers}
   end
 
@@ -61,7 +61,7 @@ defmodule PlugCors.Preflight do
   end
 
   defp send_ok(conn, config) do
-    origin = if config[:origins] == "*", do: "*", else: hd(get_req_header(conn, "Origin"))
+    origin = if config[:origins] == "*", do: "*", else: hd(get_req_header(conn, "origin"))
 
     conn = conn     
     |> put_resp_header("Access-Control-Allow-Origin", origin)

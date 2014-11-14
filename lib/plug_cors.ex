@@ -38,13 +38,13 @@ defmodule PlugCors do
   end
 
   def call(conn, config) do
-    case get_req_header(conn, "Origin") do
+    case get_req_header(conn, "origin") do
       [] ->
         conn
       [""] ->
         conn
       _ ->
-        origin = hd(get_req_header(conn, "Origin"))
+        origin = hd(get_req_header(conn, "origin"))
         cond do
           is_invalid_origin?(origin, config[:origins]) ->
             conn
@@ -68,6 +68,6 @@ defmodule PlugCors do
   end
 
   defp is_preflight_request?(conn) do
-    get_req_header(conn, "Access-Control-Request-Method") != [] and conn.method == "OPTIONS"
+    get_req_header(conn, "access-control-request-method") != [] and conn.method == "OPTIONS"
   end
 end

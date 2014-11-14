@@ -6,13 +6,13 @@ defmodule PlugCors.Actual do
   end
 
   defp check_method(conn, config) do
-    case Enum.find(config[:methods], fn(x) -> String.downcase(x) == String.downcase(conn.method) end) do
+    case Enum.find(config[:methods], fn(x) -> String.upcase(x) == String.upcase(conn.method) end) do
       nil ->
         conn      
         |> resp(403, "")
         |> halt
       _ ->
-        origin = if config[:origins] == "*", do: "*", else: hd(get_req_header(conn, "Origin"))
+        origin = if config[:origins] == "*", do: "*", else: hd(get_req_header(conn, "origin"))
 
         conn = conn |> put_resp_header("Access-Control-Allow-Origin", origin)
 
