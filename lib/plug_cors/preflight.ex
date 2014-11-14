@@ -13,7 +13,7 @@ defmodule PlugCors.Preflight do
   end
 
   defp check_request_method({ conn, method }, config) do
-    case are_all_allowed?(method, config[:methods]) do
+    case are_all_allowed?([method], config[:methods]) do
       false -> 
         send_unauthorized(conn) 
       _ ->
@@ -52,12 +52,7 @@ defmodule PlugCors.Preflight do
       if is_nil(x), do: "nil", else: x
     end)
 
-    case Enum.find(responses, fn(x) -> x == "nil" end) do
-      nil ->  
-        true
-      _ ->
-        false
-    end
+    Enum.find(responses, fn(x) -> x == "nil" end) == nil
   end
 
   defp send_ok(conn, config) do
@@ -80,14 +75,10 @@ defmodule PlugCors.Preflight do
       conn = put_resp_header(conn, "Access-Control-Expose-Headers", Enum.join(config[:expose_headers], ","))
     end
 
-    conn
-    |> resp(200, "")
-    |> halt 
+    send_resp(conn, 200, "")
   end
 
   defp send_unauthorized(conn) do
-    conn      
-    |> resp(403, "")
-    |> halt
+    send_resp(conn, 403, "")
   end
 end

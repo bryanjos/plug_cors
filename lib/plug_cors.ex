@@ -47,9 +47,7 @@ defmodule PlugCors do
         origin = hd(get_req_header(conn, "origin"))
         cond do
           is_invalid_origin?(origin, config[:origins]) ->
-            conn
-            |> resp(403, "")
-            |> halt 
+            send_resp(conn, 403, "")
           is_preflight_request?(conn) ->
             PlugCors.Preflight.handlePreflight(conn, config)
           true ->
