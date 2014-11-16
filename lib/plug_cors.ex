@@ -1,16 +1,17 @@
 defmodule PlugCors do
+  import Plug.Conn
   @moduledoc """
     A CORS Plug
 
     Usage:
 
-    ```
+    ``
         plug PlugCors, origins: ["test.origin.test"], methods: ["GET", "POST"], headers: ["Authorization"]
-    ```
+    ``
 
     Parameters:
 
-    * origins: A list of allowed origins or "\*" for all origins. Default: "\*"
+    * origins: A list of allowed origins or "\\*" for all origins. Default: "\\*"
 
     * methods: A list of allowed HTTP methods. Default: ["GET", "HEAD", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"]
 
@@ -23,8 +24,6 @@ defmodule PlugCors do
     * supports_credentials: Whether or not to allow cookies with requests "Access-Control-Allow-Credentials" header. Default: false (Will not output header)
 
   """
-
-  import Plug.Conn
   
   def init(opts) do 
     [
@@ -38,30 +37,20 @@ defmodule PlugCors do
   end
 
   def call(conn, config) do
-    case get_req_header(conn, "origin") do
-      [] ->
-        conn
-      [""] ->
-        conn
-      _ ->
-        origin = hd(get_req_header(conn, "origin"))
-        cond do
-          is_invalid_origin?(origin, config[:origins]) ->
-            send_resp(conn, 403, "")
-          is_preflight_request?(conn) ->
-            PlugCors.Preflight.handlePreflight(conn, config)
-          true ->
-            PlugCors.Actual.handleRequest(conn, config) 
-        end
-    end
+    get_req_header(conn, "origin") 
+    |> handle_request(conn, config)
   end
 
-  defp is_invalid_origin?(origin, origins) do
-    case origins do
-      "*" ->
-        false
+  defp handle_request([], conn, _config) do
+    conn
+  end
+
+  defp handle_request(_, conn, config) do
+    case is_preflight_request?(conn) do
+      true ->
+        PlugCors.Preflight.call(conn, config)
       _ ->
-        Enum.find(origins, fn(x) -> String.contains?(origin, x) end) == nil
+        PlugCors.Actual.call(conn, config)
     end
   end
 

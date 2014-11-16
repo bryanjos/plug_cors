@@ -1,10 +1,24 @@
 defmodule PlugCors.Preflight do
   import Plug.Conn
-  
-  def handlePreflight(conn, config) do
-    conn
-    |> get_request_method
-    |> check_request_method(config)
+
+  def call(conn, config) do
+    origin = get_req_header(conn, "origin")
+    case is_invalid_origin?(origin, config[:origins]) do
+      true ->
+        send_unauthorized(conn)
+      _ ->
+        conn
+        |> get_request_method
+        |> check_request_method(config)
+    end
+  end
+
+  defp is_invalid_origin?(_origin, "*") do
+    false
+  end
+
+  defp is_invalid_origin?([origin], origins) do
+    Enum.find(origins, fn(x) -> String.contains?(origin, x) end) == nil
   end
 
   defp get_request_method(conn) do
@@ -33,9 +47,8 @@ defmodule PlugCors.Preflight do
   end
 
   defp check_access_control_headers({ conn, headers }, config) do
-    headers = hd(headers) |> String.split(",")
-
-    case are_all_allowed?(headers, config[:headers] ) do
+    headers = hd(headers) |> String.split(",") |> Enum.map(fn(x) -> String.strip(x) end)
+    case are_all_allowed?(headers, config[:headers] ++ ["accept", "accept-language", "content-language", "last-event-id"] ) do
       true ->  
         send_ok(conn, config)
       _ ->
@@ -59,20 +72,20 @@ defmodule PlugCors.Preflight do
     origin = if config[:origins] == "*", do: "*", else: hd(get_req_header(conn, "origin"))
 
     conn = conn     
-    |> put_resp_header("Access-Control-Allow-Origin", origin)
-    |> put_resp_header("Access-Control-Allow-Methods", Enum.join(config[:methods], ",")) 
-    |> put_resp_header("Access-Control-Allow-Headers", Enum.join(config[:headers], ","))
+    |> put_resp_header("access-control-allow-origin", origin)
+    |> put_resp_header("access-control-allow-methods", Enum.join(config[:methods], ",")) 
+    |> put_resp_header("access-control-allow-headers", Enum.join(config[:headers], ","))
 
     if config[:max_age] > 0 do
-      conn = put_resp_header(conn, "Access-Control-Max-Age", config[:max_age])
+      conn = put_resp_header(conn, "access-control-max-age", config[:max_age])
     end
 
     if config[:supports_credentials] do
-      conn = put_resp_header(conn, "Access-Control-Allow-Credentials", true)
+      conn = put_resp_header(conn, "access-control-allow-credentials", true)
     end
 
     if Enum.count(config[:expose_headers]) > 0 do
-      conn = put_resp_header(conn, "Access-Control-Expose-Headers", Enum.join(config[:expose_headers], ","))
+      conn = put_resp_header(conn, "access-control-expose-headers", Enum.join(config[:expose_headers], ","))
     end
 
     send_resp(conn, 200, "")

@@ -1,78 +1,64 @@
 defmodule PlugCorsTest do
   use ExUnit.Case, async: true
   use Plug.Test
-  
-  defmodule TestRouterPlug do
-    import Plug.Conn
-    use Plug.Router
-    
-    plug PlugCors, origins: ["test.origin.test"], methods: ["GET", "POST"], headers: ["Authorization"]
-    plug :match
-    plug :dispatch
-  
-    get "/" do
-      conn
-      |> put_resp_content_type("text/plain")
-      |> send_resp(200, "Ok")
-    end
 
-    post "/" do
-      conn
-      |> put_resp_content_type("text/plain")
-      |> send_resp(200, "Ok")
-    end
+  @opts PlugCors.init([origins: ["test.origin.test"], methods: ["GET", "POST"], headers: ["Authorization"]])
 
-    put "/" do
-      conn
-      |> put_resp_content_type("text/plain")
-      |> send_resp(200, "Ok")
-    end
+  test "Passes conn when not a CORS request" do
+    conn = conn(:get, "/")
+    conn = PlugCors.call(conn, @opts)
+    assert conn.status == nil
   end
 
-  defp call(conn) do
-    TestRouterPlug.call(conn, [])
+  test "Passes conn on OPTIONS when not a CORS request" do
+    conn = conn(:options, "/")
+    conn = PlugCors.call(conn, @opts)
+    assert conn.status == nil
   end
 
-  test "Continues to route when not a CORS request" do
-    conn = conn(:get, "/") |> call
+  test "Sends 403 on preflight request when origin is invalid" do
+    conn = conn(:options, "/", [], headers: [{"origin", "http://test1.origin.test"}, {"access-control-request-method", "OPTIONS"}])
+    conn = PlugCors.call(conn, @opts)
+    assert conn.status == 403
+  end
+
+  test "Sends 403 on preflight request when access-control-request-method is invalid" do
+    conn = conn(:options, "/", [], headers: [{"origin", "http://test.origin.test"}, {"access-control-request-method", "PUT"}])
+    conn = PlugCors.call(conn, @opts)
+    assert conn.status == 403
+  end
+
+  test "Sends 403 on preflight request when access-control-request-headers is invalid" do
+    conn = conn(:options, "/", [], headers: [{"origin", "http://test.origin.test"}, {"access-control-request-method", "POST"}, {"access-control-request-headers", "X-CHICKEN-NUGGETS"}])
+    conn = PlugCors.call(conn, @opts)
+    assert conn.status == 403
+  end
+
+  test "Sends 200 on preflight request when all options are ok" do
+    conn = conn(:options, "/", [], headers: [{"origin", "http://test.origin.test"}, {"access-control-request-method", "POST"}, {"access-control-request-headers", "Authorization"}])
+    conn = PlugCors.call(conn, @opts)
     assert conn.status == 200
+    assert get_resp_header(conn, "access-control-allow-origin") == ["http://test.origin.test"]
+    assert get_resp_header(conn, "access-control-allow-methods") == [Enum.join(["GET", "POST"], ",")]
+    assert get_resp_header(conn, "access-control-allow-headers") == [Enum.join(["Authorization"], ",")]
   end
 
-  test "Sends 403 when origin is invalid" do
-    conn = conn(:options, "/", [], headers: [{"Origin", "http://test1.origin.test"}]) |> call
-    assert conn.status == 403
+  test "Passes conn on actual request when origin is not allowed" do
+    conn = conn(:get, "/", [], headers: [{"origin", "http://test1.origin.test"}])
+    conn = PlugCors.call(conn, @opts)
+    assert conn.status == nil   
   end
 
-  test "Sends 403 when Access-Control-Request-Method is invalid" do
-    conn = conn(:options, "/", [], headers: [{"Origin", "http://test.origin.test"}, {"Access-Control-Request-Method", "PUT"}]) |> call
-    assert conn.status == 403
+  test "Passes conn on actual request when method is not allowed" do
+    conn = conn(:put, "/", [], headers: [{"origin", "http://test.origin.test"}])
+    conn = PlugCors.call(conn, @opts)
+    assert conn.status == nil  
   end
 
-  test "Sends 403 when Access-Control-Request-Headers is invalid" do
-    conn = conn(:options, "/", [], headers: [{"Origin", "http://test.origin.test"}, {"Access-Control-Request-Method", "POST"}, {"Access-Control-Request-Headers", "X-CHICKEN-NUGGETS"}]) |> call
-    assert conn.status == 403
-  end
-
-  test "Sends 200 on preflight when all options are ok" do
-    conn = conn(:options, "/", [], headers: [{"Origin", "http://test.origin.test"}, {"Access-Control-Request-Method", "POST"}, {"Access-Control-Request-Headers", "Authorization"}]) |> call
-    assert conn.status == 200
-    assert get_resp_header(conn, "Access-Control-Allow-Origin") == ["http://test.origin.test"]
-    assert get_resp_header(conn, "Access-Control-Allow-Methods") == [Enum.join(["GET", "POST"], ",")]
-    assert get_resp_header(conn, "Access-Control-Allow-Headers") == [Enum.join(["Authorization"], ",")]
-  end
-
-  test "Sends 403 on request when origin is not allowed" do
-    conn = conn(:get, "/", [], headers: [{"Origin", "http://test1.origin.test"}]) |> call
-    assert conn.status == 403   
-  end
-
-  test "Sends 403 on request when method is not allowed" do
-    conn = conn(:put, "/", [], headers: [{"Origin", "http://test.origin.test"}]) |> call
-    assert conn.status == 403    
-  end
-
-  test "Sends request through when ok" do
-    conn = conn(:post, "/", [], headers: [{"Origin", "http://test.origin.test"}, {"Authorization", "yes"}]) |> call
-    assert conn.status == 200    
+  test "Passes conn on when ok" do
+    conn = conn(:post, "/", [], headers: [{"origin", "http://test.origin.test"}, {"authorization", "yes"}])
+    conn = PlugCors.call(conn, @opts)
+    assert conn.status == nil
+    assert get_resp_header(conn, "access-control-allow-origin") == ["http://test.origin.test"]
   end
 end
