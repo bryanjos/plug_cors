@@ -18,7 +18,16 @@ defmodule PlugCors.Preflight do
   end
 
   defp is_invalid_origin?([origin], origins) do
-    Enum.find(origins, fn(x) -> String.contains?(origin, x) end) == nil
+    Enum.find(origins, fn(x) -> is_origin_allowed?(origin, x) end) == nil
+  end
+
+  defp is_origin_allowed?(origin_to_test, allowed_origin) do
+    case allowed_origin do
+      "*." <> domain -> 
+        String.contains?(origin_to_test, domain)
+      _ -> 
+        String.contains?(origin_to_test, allowed_origin)
+    end
   end
 
   defp get_request_method(conn) do

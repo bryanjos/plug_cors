@@ -6,12 +6,12 @@ A CORS Plug
 Usage:
 
 ```
-    plug PlugCors, origins: ["test.origin.test"], methods: ["GET", "POST"], headers: ["Authorization"]
+    plug PlugCors, origins: ["test.origin.test", "*.domain.com"], methods: ["GET", "POST"], headers: ["Authorization"]
 ```
 
 Parameters:
 
-* origins: A list of allowed origins or "\*" for all origins. Default: "\*"
+* origins: A list of allowed origins or "\*" for all origins. Default: "\*". Can add use wildcards domains such as "*.domain.com" to match on the domain and all it's sub domains
 
 * methods: A list of allowed HTTP methods. Default: ["GET", "HEAD", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"]
 

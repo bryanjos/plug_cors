@@ -2,7 +2,7 @@ defmodule PlugCors.Actual do
   import Plug.Conn
 
   def call(conn, config) do
-    conn |> check_method(config)
+    check_method(conn, config)
   end
 
   defp check_method(conn, config) do

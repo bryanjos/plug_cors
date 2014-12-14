@@ -2,7 +2,7 @@ defmodule PlugCorsTest do
   use ExUnit.Case, async: true
   use Plug.Test
 
-  @opts PlugCors.init([origins: ["test.origin.test"], methods: ["GET", "POST"], headers: ["Authorization"]])
+  @opts PlugCors.init([origins: ["test.origin.test", "*.domain.test"], methods: ["GET", "POST"], headers: ["Authorization"]])
 
   test "Passes conn when not a CORS request" do
     conn = conn(:get, "/")
@@ -39,6 +39,24 @@ defmodule PlugCorsTest do
     conn = PlugCors.call(conn, @opts)
     assert conn.status == 200
     assert get_resp_header(conn, "access-control-allow-origin") == ["http://test.origin.test"]
+    assert get_resp_header(conn, "access-control-allow-methods") == [Enum.join(["GET", "POST"], ",")]
+    assert get_resp_header(conn, "access-control-allow-headers") == [Enum.join(["Authorization"], ",")]
+  end
+
+  test "Sends 200 when subdomain allowed" do
+    conn = conn(:options, "/", [], headers: [{"origin", "sub.domain.test"}, {"access-control-request-method", "POST"}, {"access-control-request-headers", "Authorization"}])
+    conn = PlugCors.call(conn, @opts)
+    assert conn.status == 200
+    assert get_resp_header(conn, "access-control-allow-origin") == ["sub.domain.test"]
+    assert get_resp_header(conn, "access-control-allow-methods") == [Enum.join(["GET", "POST"], ",")]
+    assert get_resp_header(conn, "access-control-allow-headers") == [Enum.join(["Authorization"], ",")]
+  end
+
+  test "Sends 200 when main domain allowed" do
+    conn = conn(:options, "/", [], headers: [{"origin", "domain.test"}, {"access-control-request-method", "POST"}, {"access-control-request-headers", "Authorization"}])
+    conn = PlugCors.call(conn, @opts)
+    assert conn.status == 200
+    assert get_resp_header(conn, "access-control-allow-origin") == ["domain.test"]
     assert get_resp_header(conn, "access-control-allow-methods") == [Enum.join(["GET", "POST"], ",")]
     assert get_resp_header(conn, "access-control-allow-headers") == [Enum.join(["Authorization"], ",")]
   end
