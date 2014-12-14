@@ -1,5 +1,6 @@
 defmodule PlugCors.Preflight do
   import Plug.Conn
+  @moduledoc false
 
   def call(conn, config) do
     origin = get_req_header(conn, "origin")

@@ -5,9 +5,8 @@ defmodule PlugCors do
 
     Usage:
 
-    ``
         plug PlugCors, origins: ["test.origin.test", "*.domain.com"], methods: ["GET", "POST"], headers: ["Authorization"]
-    ``
+    
 
     Parameters:
 

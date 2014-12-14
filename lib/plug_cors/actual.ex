@@ -1,6 +1,8 @@
 defmodule PlugCors.Actual do
   import Plug.Conn
 
+  @moduledoc false
+
   def call(conn, config) do
     check_method(conn, config)
   end
