@@ -2,13 +2,14 @@ defmodule PlugCors.Preflight do
   import Plug.Conn
   @moduledoc false
 
-  @default_accept_headers [
+  def default_accept_headers do [
     "accept",
     "accept-language",
     "content-language",
     "last-event-id",
     "content-type"
     ]
+  end
 
   def call(conn, config) do
     origin = get_req_header(conn, "origin")
@@ -79,7 +80,7 @@ defmodule PlugCors.Preflight do
   end
 
   defp are_all_allowed?(list_to_check, configured_list) do
-   allowed_list = configured_list ++ @default_accept_headers 
+   allowed_list = configured_list ++ default_accept_headers 
    responses = Enum.map(list_to_check, fn(x) ->
       Enum.find(allowed_list, fn(y) -> String.downcase(y) == String.downcase(x) end)
     end)
@@ -91,8 +92,9 @@ defmodule PlugCors.Preflight do
     Enum.find(responses, fn(x) -> x == "nil" end) == nil
   end
 
-  defp allow_headers(config) do
-    Enum.uniq(Enum.concat(config[:headers],@default_accept_headers))
+  defp put_access_control_allow_headers(conn,config_headers) do
+    headers = Enum.uniq(Enum.concat(default_accept_headers,config_headers))
+    conn = put_resp_header(conn,"access-control-allow-headers", Enum.join(headers, ","))
   end
 
   defp send_ok(conn, config) do
@@ -101,7 +103,7 @@ defmodule PlugCors.Preflight do
     conn = conn     
     |> put_resp_header("access-control-allow-origin", origin)
     |> put_resp_header("access-control-allow-methods", Enum.join(config[:methods], ",")) 
-    |> put_resp_header("access-control-allow-headers", Enum.join(allow_headers(config), ","))
+    |> put_access_control_allow_headers(config[:headers])
 
     if config[:max_age] > 0 do
       conn = put_resp_header(conn, "access-control-max-age", config[:max_age])
