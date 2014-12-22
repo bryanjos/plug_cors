@@ -15,7 +15,7 @@ Parameters:
 
 * methods: A list of allowed HTTP methods. Default: ["GET", "HEAD", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"]
 
-* headers: A list of allowed HTTP headers. Default: []
+* headers: A list of allowed HTTP headers. Default: [] ( allow any headers)
 
 * expose_headers: A list of headers to expose to the browser via the "Access-Control-Expose-Headers" header. Default: [] (Will not output header)
 
