@@ -14,8 +14,8 @@ defmodule PlugCors do
 
     * methods: A list of allowed HTTP methods. Default: ["GET", "HEAD", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"]
 
-    * headers: A list of allowed HTTP headers. Default: []
-
+    * headers: A list of additionally allowed HTTP headers. Default: [] 
+               These are in addition to 'PlugCors.Preflight.default_accept_headers'
     * expose_headers: A list of headers to expose to the browser via the "Access-Control-Expose-Headers" header. Default: [] (Will not output header)
 
     * max_age: The max cache age of the response in seconds "Access-Control-Max-Age" header. Default: 0 (Will not output header)

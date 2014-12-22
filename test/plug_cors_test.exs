@@ -2,7 +2,11 @@ defmodule PlugCorsTest do
   use ExUnit.Case, async: true
   use Plug.Test
 
-  @opts PlugCors.init([origins: ["test.origin.test", "*.domain.test"], methods: ["GET", "POST"], headers: ["Authorization"]])
+  @additonal_headers  ["Authorization"]
+  @opts PlugCors.init([origins: ["test.origin.test", "*.domain.test"], methods: ["GET", "POST"], headers: @additonal_headers])
+
+  @expected_headers Enum.uniq(Enum.concat(PlugCors.Preflight.default_accept_headers,@additonal_headers))
+
 
   test "Passes conn when not a CORS request" do
     conn = conn(:get, "/")
@@ -40,7 +44,7 @@ defmodule PlugCorsTest do
     assert conn.status == 200
     assert get_resp_header(conn, "access-control-allow-origin") == ["http://test.origin.test"]
     assert get_resp_header(conn, "access-control-allow-methods") == [Enum.join(["GET", "POST"], ",")]
-    assert get_resp_header(conn, "access-control-allow-headers") == [Enum.join(["Authorization"], ",")]
+    assert get_resp_header(conn, "access-control-allow-headers") == [Enum.join(@expected_headers, ",")]
   end
 
   test "Sends 200 when subdomain allowed" do
@@ -49,7 +53,7 @@ defmodule PlugCorsTest do
     assert conn.status == 200
     assert get_resp_header(conn, "access-control-allow-origin") == ["sub.domain.test"]
     assert get_resp_header(conn, "access-control-allow-methods") == [Enum.join(["GET", "POST"], ",")]
-    assert get_resp_header(conn, "access-control-allow-headers") == [Enum.join(["Authorization"], ",")]
+    assert get_resp_header(conn, "access-control-allow-headers") == [Enum.join(@expected_headers, ",")]
   end
 
   test "Sends 200 when main domain allowed" do
@@ -58,7 +62,7 @@ defmodule PlugCorsTest do
     assert conn.status == 200
     assert get_resp_header(conn, "access-control-allow-origin") == ["domain.test"]
     assert get_resp_header(conn, "access-control-allow-methods") == [Enum.join(["GET", "POST"], ",")]
-    assert get_resp_header(conn, "access-control-allow-headers") == [Enum.join(["Authorization"], ",")]
+    assert get_resp_header(conn, "access-control-allow-headers") == [Enum.join(@expected_headers, ",")]
   end
 
   test "Passes conn on actual request when origin is not allowed" do
