@@ -67,7 +67,7 @@ defmodule PlugCors.Preflight do
 
   defp check_access_control_headers({ conn, headers }, config) do
     headers = hd(headers) |> String.split(",") |> Enum.map(fn(x) -> String.strip(x) end)
-    case are_all_allowed?(headers, config[:headers] ) do
+    case are_all_allowed?(headers, config[:headers] ++ default_accept_headers ) do
       true ->  
         send_ok(conn, config)
       _ ->
@@ -75,12 +75,7 @@ defmodule PlugCors.Preflight do
     end
   end
 
-  defp are_all_allowed?(_,[]) do
-    true
-  end
-
-  defp are_all_allowed?(list_to_check, configured_list) do
-   allowed_list = configured_list ++ default_accept_headers 
+  defp are_all_allowed?(list_to_check, allowed_list) do
    responses = Enum.map(list_to_check, fn(x) ->
       Enum.find(allowed_list, fn(y) -> String.downcase(y) == String.downcase(x) end)
     end)
@@ -94,7 +89,7 @@ defmodule PlugCors.Preflight do
 
   defp put_access_control_allow_headers(conn,config_headers) do
     headers = Enum.uniq(Enum.concat(default_accept_headers,config_headers))
-    conn = put_resp_header(conn,"access-control-allow-headers", Enum.join(headers, ","))
+    put_resp_header(conn,"access-control-allow-headers", Enum.join(headers, ","))
   end
 
   defp send_ok(conn, config) do
