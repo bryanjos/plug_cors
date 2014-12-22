@@ -76,7 +76,7 @@ defmodule PlugCors.Preflight do
   end
 
   defp are_all_allowed?(list_to_check, allowed_list) do
-   responses = Enum.map(list_to_check, fn(x) ->
+    responses = Enum.map(list_to_check, fn(x) ->
       Enum.find(allowed_list, fn(y) -> String.downcase(y) == String.downcase(x) end)
     end)
 
