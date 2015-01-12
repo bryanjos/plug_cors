@@ -3,6 +3,8 @@ PlugCors
 
 A CORS Plug
 
+[Documentation](http://hexdocs.pm/plug_cors/)
+
 Usage:
 
 ```elixir
