@@ -5,8 +5,17 @@ defmodule PlugCors do
 
     Usage:
 
-        plug PlugCors, origins: ["test.origin.test", "*.domain.com"], methods: ["GET", "POST"], headers: ["Authorization"]
-    
+    ```
+    plug PlugCors, origins: ["test.origin.test", "*.domain.com"], methods: ["GET", "POST"], headers: ["Authorization"]
+    ```
+
+    You can now also define the parameters inside of your elixir config instead if you wish. Parameters defined directly on the plug take precedence over the ones in config
+
+    ```
+    config :plug_cors, origins: ["test.origin.test", "*.domain.com"], methods: ["GET", "POST"], headers: ["Authorization"]
+    ```    
+
+
 
     Parameters:
 
@@ -26,13 +35,17 @@ defmodule PlugCors do
   
   def init(opts) do 
     [
-      origins: Keyword.get(opts, :origins, "*"),
-      methods: Keyword.get(opts, :methods, ["GET", "HEAD", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"]),
-      headers: Keyword.get(opts, :headers, []),
-      expose_headers: Keyword.get(opts, :expose_headers, []),
-      max_age: Keyword.get(opts, :max_age, 0),
-      supports_credentials: Keyword.get(opts, :supports_credentials, false)
+      origins: get_config_env(:origins, opts, "*"),
+      methods: get_config_env(:methods, opts, ["GET", "HEAD", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"]),
+      headers: get_config_env(:headers, opts, []),
+      expose_headers: get_config_env(:expose_headers, opts, []),
+      max_age: get_config_env(:max_age, opts, 0),
+      supports_credentials: get_config_env(:supports_credentials, opts, false)
     ]
+  end
+
+  defp get_config_env(key, opts, default_value) do
+    Keyword.get(opts, key, Application.get_env(:plug_cors, key, default_value))
   end
 
   def call(conn, config) do

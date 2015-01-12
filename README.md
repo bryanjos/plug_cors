@@ -5,8 +5,18 @@ A CORS Plug
 
 Usage:
 
-```
+```elixir
     plug PlugCors, origins: ["test.origin.test", "*.domain.com"], methods: ["GET", "POST"], headers: ["Authorization"]
+```
+
+
+You can now also define the parameters inside of your elixir config if you wish. Parameters defined directly on the plug take precedence over the ones in config
+
+```elixir
+  config :plug_cors,
+    origins: ["test.origin.test", "*.domain.com"],
+    methods: ["GET", "POST"],
+    headers: ["Authorization"]
 ```
 
 Parameters:
