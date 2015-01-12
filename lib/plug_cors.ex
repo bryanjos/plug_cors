@@ -4,18 +4,15 @@ defmodule PlugCors do
     A CORS Plug
 
     Usage:
-
-    ```
-    plug PlugCors, origins: ["test.origin.test", "*.domain.com"], methods: ["GET", "POST"], headers: ["Authorization"]
-    ```
+      plug PlugCors, origins: ["test.origin.test", "*.domain.com"], methods: ["GET", "POST"], headers: ["Authorization"]
 
     You can now also define the parameters inside of your elixir config instead if you wish. Parameters defined directly on the plug take precedence over the ones in config
 
-    ```
-    config :plug_cors, origins: ["test.origin.test", "*.domain.com"], methods: ["GET", "POST"], headers: ["Authorization"]
-    ```    
-
-
+      config :plug_cors, 
+        origins: ["test.origin.test", "*.domain.com"], 
+        methods: ["GET", "POST"], 
+        headers: ["Authorization"]
+        
 
     Parameters:
 
@@ -23,8 +20,8 @@ defmodule PlugCors do
 
     * methods: A list of allowed HTTP methods. Default: ["GET", "HEAD", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"]
 
-    * headers: A list of additionally allowed HTTP headers. Default: [] 
-               These are in addition to 'PlugCors.Preflight.default_accept_headers'
+    * headers: A list of additionally allowed HTTP headers. These are in addition to 'PlugCors.Preflight.default_accept_headers'. Default: []
+
     * expose_headers: A list of headers to expose to the browser via the "Access-Control-Expose-Headers" header. Default: [] (Will not output header)
 
     * max_age: The max cache age of the response in seconds "Access-Control-Max-Age" header. Default: 0 (Will not output header)
