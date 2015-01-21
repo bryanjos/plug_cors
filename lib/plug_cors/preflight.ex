@@ -105,7 +105,7 @@ defmodule PlugCors.Preflight do
     end
 
     if config[:supports_credentials] do
-      conn = put_resp_header(conn, "access-control-allow-credentials", true)
+      conn = put_resp_header(conn, "access-control-allow-credentials", "true")
     end
 
     if Enum.count(config[:expose_headers]) > 0 do
