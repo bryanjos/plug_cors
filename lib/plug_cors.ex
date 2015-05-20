@@ -6,7 +6,16 @@ defmodule PlugCors do
     Usage:
       plug PlugCors, origins: ["test.origin.test", "*.domain.com"], methods: ["GET", "POST"], headers: ["Authorization"]
 
-    You can now also define the parameters inside of your elixir config instead if you wish. Parameters defined directly on the plug take precedence over the ones in config
+    If using with Phoenix, make sure to define the plug above your router. This is so the plug correctly responds to the OPTIONS requests the browser makes for CORS and prevents 404 responses to the browser's CORS requests.
+
+      defmodule App.Endpoint do
+        #the rest of the plugs defined in App.Endpoint
+
+        plug PlugCors, origins: ["*"]
+        plug :router, App.Router
+      end
+
+    You can also define the parameters inside of your elixir config instead if you wish. Parameters defined directly on the plug take precedence over the ones in config
 
       config :plug_cors, 
         origins: ["test.origin.test", "*.domain.com"], 

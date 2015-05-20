@@ -3,11 +3,12 @@ defmodule PlugCors.Mixfile do
 
   def project do
     [ app: :plug_cors,
-      version: "0.7.1",
+      version: "0.7.2",
       elixir: "~> 1.0.0",
       description: description,
       package: package,
-      deps: deps]
+      deps: deps
+    ]
   end
 
   def application do
