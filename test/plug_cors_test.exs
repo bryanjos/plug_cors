@@ -63,6 +63,45 @@ defmodule PlugCorsTest do
     assert get_resp_header(conn, "access-control-allow-headers") == [Enum.join(@expected_headers, ",")]
   end
 
+  test "Sends 200 when wildcard(*) origin allowed" do
+    conn = conn(:options, "/", [])
+    |> put_req_header("origin", "http://test.origin.test")
+    |> put_req_header("access-control-request-method", "POST")
+    |> put_req_header("access-control-request-headers", "Authorization")
+    |> PlugCors.call(PlugCors.init([origins: "*", methods: ["GET", "POST"], headers: @additonal_headers]))
+
+    assert conn.status == 200
+    assert get_resp_header(conn, "access-control-allow-origin") == ["*"]
+    assert get_resp_header(conn, "access-control-allow-methods") == [Enum.join(["GET", "POST"], ",")]
+    assert get_resp_header(conn, "access-control-allow-headers") == [Enum.join(@expected_headers, ",")]
+  end
+
+  test "Sends 200 when wildcard(*) origin in allowed list" do
+    conn = conn(:options, "/", [])
+    |> put_req_header("origin", "http://test.origin.test")
+    |> put_req_header("access-control-request-method", "POST")
+    |> put_req_header("access-control-request-headers", "Authorization")
+    |> PlugCors.call(PlugCors.init([origins: ["*"], methods: ["GET", "POST"], headers: @additonal_headers]))
+
+    assert conn.status == 200
+    assert get_resp_header(conn, "access-control-allow-origin") == ["http://test.origin.test"]
+    assert get_resp_header(conn, "access-control-allow-methods") == [Enum.join(["GET", "POST"], ",")]
+    assert get_resp_header(conn, "access-control-allow-headers") == [Enum.join(@expected_headers, ",")]
+  end
+
+  test "Sends 200 when wildcard(*) origin added to allowed list" do
+    conn = conn(:options, "/", [])
+    |> put_req_header("origin", "http://test.origin.test")
+    |> put_req_header("access-control-request-method", "POST")
+    |> put_req_header("access-control-request-headers", "Authorization")
+    |> PlugCors.call(PlugCors.init([origins: ["*", "*.domain.test"], methods: ["GET", "POST"], headers: @additonal_headers]))
+
+    assert conn.status == 200
+    assert get_resp_header(conn, "access-control-allow-origin") == ["http://test.origin.test"]
+    assert get_resp_header(conn, "access-control-allow-methods") == [Enum.join(["GET", "POST"], ",")]
+    assert get_resp_header(conn, "access-control-allow-headers") == [Enum.join(@expected_headers, ",")]
+  end
+
   test "Sends 200 when subdomain allowed" do
     conn = conn(:options, "/", [])
     |> put_req_header("origin", "sub.domain.test")
