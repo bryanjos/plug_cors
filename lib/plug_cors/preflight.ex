@@ -33,7 +33,9 @@ defmodule PlugCors.Preflight do
 
   defp is_origin_allowed?(origin_to_test, allowed_origin) do
     case allowed_origin do
-      "*." <> domain -> 
+      "*" ->
+        true
+      "*." <> domain ->
         String.contains?(origin_to_test, domain)
       _ -> 
         String.contains?(origin_to_test, allowed_origin)
