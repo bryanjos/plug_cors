@@ -84,7 +84,7 @@ defmodule PlugCorsTest do
     |> PlugCors.call(PlugCors.init([origins: ["*"], methods: ["GET", "POST"], headers: @additonal_headers]))
 
     assert conn.status == 200
-    assert get_resp_header(conn, "access-control-allow-origin") == ["http://test.origin.test"]
+    assert get_resp_header(conn, "access-control-allow-origin") == ["*"]
     assert get_resp_header(conn, "access-control-allow-methods") == [Enum.join(["GET", "POST"], ",")]
     assert get_resp_header(conn, "access-control-allow-headers") == [Enum.join(@expected_headers, ",")]
   end

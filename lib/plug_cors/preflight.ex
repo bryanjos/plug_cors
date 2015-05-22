@@ -95,7 +95,7 @@ defmodule PlugCors.Preflight do
   end
 
   defp send_ok(conn, config) do
-    origin = if config[:origins] == "*", do: "*", else: hd(get_req_header(conn, "origin"))
+    origin = if List.wrap(config[:origins]) == ["*"], do: "*", else: hd(get_req_header(conn, "origin"))
 
     conn = conn     
     |> put_resp_header("access-control-allow-origin", origin)
