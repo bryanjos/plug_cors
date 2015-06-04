@@ -1,4 +1,4 @@
-## PlugCors [![Documentation](https://img.shields.io/badge/docs-hexpm-blue.svg)](http://hexdocs.pm/plug_cors/) [![Downloads](https://img.shields.io/hexpm/dt/plug.svg)](https://hex.pm/packages/plug_cors)
+## PlugCors [![Documentation](https://img.shields.io/badge/docs-hexpm-blue.svg)](http://hexdocs.pm/plug_cors/) [![Downloads](https://img.shields.io/hexpm/dt/plug_cors.svg)](https://hex.pm/packages/plug_cors)
 
 A CORS Middleware for Plug.
 
