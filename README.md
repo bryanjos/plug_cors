@@ -1,11 +1,21 @@
-PlugCors
-========
+## PlugCors [![Documentation](https://img.shields.io/badge/docs-hexpm-blue.svg)](http://hexdocs.pm/plug_cors/) [![Downloads](https://img.shields.io/hexpm/dt/plug_cors.svg)](https://hex.pm/packages/plug_cors)
 
-A CORS Plug
+A CORS Middleware for Plug.
 
-[Documentation](http://hexdocs.pm/plug_cors/)
+## Installation
 
-Usage:
+Add the following to the deps section in your ```mix.exs``` file.
+
+```Elixir
+defp deps do
+  [...
+   {:plug_cors, "~> 0.7.3"}]
+end
+```
+
+After you are done, run ```mix deps.get``` in your shell to fetch and compile PlugCors.
+
+## Usage
 
 ```elixir
     plug PlugCors, origins: ["test.origin.test", "*.domain.com"], methods: ["GET", "POST"], headers: ["Authorization"]
@@ -31,7 +41,7 @@ You can also define the parameters inside of your elixir config if you wish. Par
     headers: ["Authorization"]
 ```
 
-Parameters:
+## Parameters
 
 * origins: A list of allowed origins or "\*" for all origins. Default: "\*". Can add use wildcards domains such as "*.domain.com" to match on the domain and all it's sub domains
 
