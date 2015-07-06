@@ -12,18 +12,19 @@ defmodule PlugCors.Actual do
       nil ->
         conn
       _ ->
-        origin = if config[:origins] == "*", do: "*", else: hd(get_req_header(conn, "origin"))
+        if PlugCors.is_valid_origin?(get_req_header(conn, "origin"), config[:origins]) do                         
+          origin = if config[:origins] == "*", do: "*", else: hd(get_req_header(conn, "origin"))
+          conn = conn |> put_resp_header("access-control-allow-origin", origin)
 
-        conn = conn |> put_resp_header("access-control-allow-origin", origin)
+          if config[:supports_credentials] do
+            conn = put_resp_header(conn, "access-control-allow-credentials", "true")
+          end
 
-        if config[:supports_credentials] do
-          conn = put_resp_header(conn, "access-control-allow-credentials", "true")
+          if Enum.count(config[:expose_headers]) > 0 do
+            conn = put_resp_header(conn, "access-control-expose-headers", Enum.join(config[:expose_headers], ","))
+          end
         end
-
-        if Enum.count(config[:expose_headers]) > 0 do
-          conn = put_resp_header(conn, "access-control-expose-headers", Enum.join(config[:expose_headers], ","))
-        end
-
+                                        
         conn
     end
   end
