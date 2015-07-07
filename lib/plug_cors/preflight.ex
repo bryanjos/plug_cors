@@ -13,32 +13,13 @@ defmodule PlugCors.Preflight do
 
   def call(conn, config) do
     origin = get_req_header(conn, "origin")
-    case is_invalid_origin?(origin, config[:origins]) do
+    case PlugCors.is_invalid_origin?(origin, config[:origins]) do
       true ->
         send_unauthorized(conn)
       _ ->
         conn
         |> get_request_method
         |> check_request_method(config)
-    end
-  end
-
-  defp is_invalid_origin?(_origin, "*") do
-    false
-  end
-
-  defp is_invalid_origin?([origin], origins) do
-    Enum.find(origins, fn(x) -> is_origin_allowed?(origin, x) end) == nil
-  end
-
-  defp is_origin_allowed?(origin_to_test, allowed_origin) do
-    case allowed_origin do
-      "*" ->
-        true
-      "*." <> domain ->
-        String.contains?(origin_to_test, domain)
-      _ -> 
-        String.contains?(origin_to_test, allowed_origin)
     end
   end
 

@@ -75,4 +75,28 @@ defmodule PlugCors do
   defp is_preflight_request?(conn) do
     get_req_header(conn, "access-control-request-method") != [] and conn.method == "OPTIONS"
   end
+
+  def is_valid_origin?(origin, origins) do
+    !is_invalid_origin?(origin, origins)
+  end
+
+  def is_invalid_origin?(_origin, "*") do
+    false
+  end
+
+  def is_invalid_origin?([origin], origins) do
+    Enum.find(origins, fn(x) -> is_origin_allowed?(origin, x) end) == nil
+  end
+
+  def is_origin_allowed?(origin_to_test, allowed_origin) do
+    case allowed_origin do
+      "*" ->
+        true
+      "*." <> domain ->
+        String.contains?(origin_to_test, domain)
+      _ ->
+        origin_to_test = URI.parse(origin_to_test).host
+        String.downcase(origin_to_test) == String.downcase(allowed_origin)
+    end
+  end
 end
