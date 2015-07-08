@@ -76,18 +76,22 @@ defmodule PlugCors do
     get_req_header(conn, "access-control-request-method") != [] and conn.method == "OPTIONS"
   end
 
+  @doc false
   def is_valid_origin?(origin, origins) do
     !is_invalid_origin?(origin, origins)
   end
 
+  @doc false
   def is_invalid_origin?(_origin, "*") do
     false
   end
 
+  @doc false
   def is_invalid_origin?([origin], origins) do
     Enum.find(origins, fn(x) -> is_origin_allowed?(origin, x) end) == nil
   end
 
+  @doc false
   def is_origin_allowed?(origin_to_test, allowed_origin) do
     case allowed_origin do
       "*" ->
