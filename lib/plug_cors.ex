@@ -100,7 +100,7 @@ defmodule PlugCors do
         String.contains?(origin_to_test, domain)
       _ ->
         origin_to_test = URI.parse(origin_to_test).host
-        String.downcase(origin_to_test) == String.downcase(allowed_origin)
+        not is_nil(origin_to_test) and String.downcase(origin_to_test) == String.downcase(allowed_origin)
     end
   end
 end
