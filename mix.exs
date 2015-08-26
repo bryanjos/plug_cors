@@ -3,7 +3,7 @@ defmodule PlugCors.Mixfile do
 
   def project do
     [ app: :plug_cors,
-      version: "0.8.1",
+      version: "0.8.2",
       elixir: "~> 1.0.0",
       description: description,
       package: package,
@@ -26,7 +26,7 @@ defmodule PlugCors.Mixfile do
 
   defp description do
     """
-    CORS Plug Middleware
+    Deprecated: CORS Plug Middleware. Please use corsica instead 
     """
   end
 

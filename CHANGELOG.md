@@ -1,3 +1,6 @@
+# v0.8.2
+* Deprecation notice
+
 # v0.8.1
 * Enhancements
   * Updated to Plug 1.0
